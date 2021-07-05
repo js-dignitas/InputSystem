@@ -1,4 +1,4 @@
-#if UNITY_INPUT_SYSTEM_ENABLE_XR || PACKAGE_DOCS_GENERATION
+#if (UNITY_INPUT_SYSTEM_ENABLE_XR && ENABLE_VR) || PACKAGE_DOCS_GENERATION
 using System;
 using System.Collections.Generic;
 using UnityEngine.XR;
@@ -308,6 +308,7 @@ namespace UnityEngine.InputSystem.XR
         /// </summary>
         public static void Initialize()
         {
+            InputSystem.RegisterLayout<PoseControl>("Pose");
             InputSystem.RegisterLayout<BoneControl>("Bone");
             InputSystem.RegisterLayout<EyesControl>("Eyes");
 
@@ -316,7 +317,7 @@ namespace UnityEngine.InputSystem.XR
 
             InputSystem.onFindLayoutForDevice += XRLayoutBuilder.OnFindLayoutForDevice;
 
-            #if !DISABLE_BUILTIN_INPUT_SYSTEM_WINDOWSMR
+#if !DISABLE_BUILTIN_INPUT_SYSTEM_WINDOWSMR
             InputSystem.RegisterLayout<UnityEngine.XR.WindowsMR.Input.WMRHMD>(
                 matches: new InputDeviceMatcher()
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
@@ -332,9 +333,9 @@ namespace UnityEngine.InputSystem.XR
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
                     .WithProduct(@"(^(Hand -))")
             );
-            #endif
+#endif
 
-            #if !DISABLE_BUILTIN_INPUT_SYSTEM_OCULUS
+#if !DISABLE_BUILTIN_INPUT_SYSTEM_OCULUS
             InputSystem.RegisterLayout<Unity.XR.Oculus.Input.OculusHMD>(
                 matches: new InputDeviceMatcher()
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
@@ -361,9 +362,9 @@ namespace UnityEngine.InputSystem.XR
                 matches: new InputDeviceMatcher()
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
                     .WithProduct("^(Oculus Tracked Remote)"));
-            #endif
+#endif
 
-            #if !DISABLE_BUILTIN_INPUT_SYSTEM_GOOGLEVR
+#if !DISABLE_BUILTIN_INPUT_SYSTEM_GOOGLEVR
             InputSystem.RegisterLayout<Unity.XR.GoogleVr.DaydreamHMD>(
                 matches: new InputDeviceMatcher()
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
@@ -372,9 +373,9 @@ namespace UnityEngine.InputSystem.XR
                 matches: new InputDeviceMatcher()
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
                     .WithProduct("^(Daydream Controller)"));
-            #endif
+#endif
 
-            #if !DISABLE_BUILTIN_INPUT_SYSTEM_OPENVR
+#if !DISABLE_BUILTIN_INPUT_SYSTEM_OPENVR
             InputSystem.RegisterLayout<Unity.XR.OpenVR.OpenVRHMD>(
                 matches: new InputDeviceMatcher()
                     .WithInterface(XRUtilities.InterfaceMatchAnyVersion)
@@ -415,8 +416,8 @@ namespace UnityEngine.InputSystem.XR
                     .WithManufacturer("HTC")
                     .WithProduct(@"^(HTC V2-XD/XE)")
             );
-            #endif
+#endif
         }
     }
 }
-#endif // UNITY_INPUT_SYSTEM_ENABLE_XR
+#endif // (UNITY_INPUT_SYSTEM_ENABLE_XR && ENABLE_VR) || PACKAGE_DOCS_GENERATION

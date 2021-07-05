@@ -6,6 +6,8 @@ using System.Text;
 using UnityEngine.InputSystem.Utilities;
 using UnityEditor;
 
+////TODO: option to allow referencing the original asset rather than embedding it
+
 ////TODO: emit indexer directly at toplevel so you can more easily look up actions dynamically
 
 ////TODO: put the generated code behind #if that depends on input system
@@ -92,7 +94,7 @@ namespace UnityEngine.InputSystem.Editor
             }
 
             // Begin class.
-            writer.WriteLine($"public partial class @{options.className} : IInputActionCollection, IDisposable");
+            writer.WriteLine($"public partial class @{options.className} : IInputActionCollection2, IDisposable");
             writer.BeginBlock();
 
             writer.WriteLine($"public InputActionAsset asset {{ get; }}");
@@ -169,6 +171,19 @@ namespace UnityEngine.InputSystem.Editor
             writer.WriteLine("public void Disable()");
             writer.BeginBlock();
             writer.WriteLine("asset.Disable();");
+            writer.EndBlock();
+
+            writer.WriteLine("public IEnumerable<InputBinding> bindings => asset.bindings;");
+            writer.WriteLine();
+
+            writer.WriteLine("public InputAction FindAction(string actionNameOrId, bool throwIfNotFound = false)");
+            writer.BeginBlock();
+            writer.WriteLine("return asset.FindAction(actionNameOrId, throwIfNotFound);");
+            writer.EndBlock();
+
+            writer.WriteLine("public int FindBinding(InputBinding bindingMask, out InputAction action)");
+            writer.BeginBlock();
+            writer.WriteLine("return asset.FindBinding(bindingMask, out action);");
             writer.EndBlock();
 
             // Action map accessors.

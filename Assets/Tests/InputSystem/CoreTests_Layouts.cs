@@ -1102,35 +1102,6 @@ partial class CoreTests
 
     [Test]
     [Category("Layouts")]
-    public void Layouts_AddingTwoControlsWithSameName_WillCauseException()
-    {
-        const string json = @"
-            {
-                ""name"" : ""MyDevice"",
-                ""extend"" : ""Gamepad"",
-                ""controls"" : [
-                    {
-                        ""name"" : ""MyControl"",
-                        ""layout"" : ""Button""
-                    },
-                    {
-                        ""name"" : ""MyControl"",
-                        ""layout"" : ""Button""
-                    }
-                ]
-            }
-        ";
-
-        // We do minimal processing when adding a layout so verification
-        // only happens when we actually try to instantiate the layout.
-        InputSystem.RegisterLayout(json);
-
-        Assert.That(() => InputSystem.AddDevice("MyDevice"),
-            Throws.TypeOf<InvalidOperationException>().With.Property("Message").Contain("Duplicate control"));
-    }
-
-    [Test]
-    [Category("Layouts")]
     public void Layouts_ReplacingDeviceLayoutAffectsAllDevicesUsingLayout()
     {
         // Create a device hiearchy and then replace the base layout. We can't easily use
@@ -1951,6 +1922,29 @@ partial class CoreTests
         Assert.That(device["fourth"].stateBlock.sizeInBits, Is.EqualTo(1));
     }
 
+    [Preserve]
+    private class DeviceWithMisalignedAutomaticControl : InputDevice
+    {
+        [Preserve]
+        [InputControl(offset = 0, sizeInBits = 8)]
+        public AxisControl control1;
+
+        // 4-byte control. Must be aligned to 4 bytes.
+        [Preserve]
+        [InputControl(offset = InputStateBlock.AutomaticOffset, sizeInBits = 32)]
+        public AxisControl control2;
+    }
+
+    [Test]
+    [Category("Layouts")]
+    public void Layouts_WhenPlacingControlsAutomatically_MemoryAlignmentConstraintsAreRespected()
+    {
+        var device = InputSystem.AddDevice<DeviceWithMisalignedAutomaticControl>();
+
+        Assert.That(device.stateBlock.alignedSizeInBytes, Is.EqualTo(8));
+        Assert.That(device["control2"].stateBlock.byteOffset, Is.EqualTo(4));
+    }
+
     [Test]
     [Category("Layouts")]
     public void Layouts_CanBuildLayoutsInCode()
@@ -2100,6 +2094,9 @@ partial class CoreTests
 
     [Test]
     [Category("Layouts")]
+#if UNITY_ANDROID && !UNITY_EDITOR
+    [Ignore("Case 1254566")]
+#endif
     public void Layouts_CanGetNameOfBaseLayout()
     {
         Assert.That(InputSystem.GetNameOfBaseLayout("DualShockGamepad"), Is.EqualTo("Gamepad"));
@@ -2109,6 +2106,9 @@ partial class CoreTests
 
     [Test]
     [Category("Layouts")]
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+    [Ignore("Case 1254565")]
+#endif
     public void Layouts_CanDetermineIfLayoutIsBasedOnGivenLayout()
     {
         Assert.That(InputSystem.IsFirstLayoutBasedOnSecond("DualShockGamepad", "Gamepad"), Is.True);
